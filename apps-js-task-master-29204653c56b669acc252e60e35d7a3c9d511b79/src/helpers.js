@@ -3,14 +3,13 @@ function tempAlert(msg, duration){
     alertElement.innerHTML = msg
     setTimeout(function(){
         alertElement.parentNode.removeChild(alertElement);
-      },duration);
+        },duration);
     document.body.appendChild(alertElement);
-  }
-
-  function createElementWithClassname(elementTag, elementClassName){
+}
+function createElementWithClassname(elementTag, elementClassName){
     const element = document.createElement(elementTag)
     element.className = elementClassName
     return element
-  }
+}
 
-  export {tempAlert, createElementWithClassname}
+export {tempAlert, createElementWithClassname}
