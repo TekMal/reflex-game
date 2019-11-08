@@ -1,3 +1,4 @@
+import {tempAlert} from "./helpers"
 const gameBoxes = document.querySelectorAll("div.gameSquare")
 const scorePanel = document.getElementById("scorePanel")
 const timePanel = document.getElementById("timePanel")
@@ -7,13 +8,19 @@ startButton.addEventListener('click', start)
 document.getElementById("reset").addEventListener('click', reset)
 let intervalBoard = null
 let intervalTime = null
+let intervalResetGreenBox = null
 let score = 0
 let previousScore = 0
 let time = 60
 let live = 3
 
 function timer(){
-  timePanel.innerHTML =  `Czas: ${time--}`
+  if(time === 0){
+    checkLiveAndTime()
+  }
+  else{
+  timePanel.innerHTML =  `Czas: ${time--} sek`
+  }
 }
 function newScore(){
   scorePanel.innerHTML = `Punkty: ${score}`
@@ -21,39 +28,10 @@ function newScore(){
 function newLive(liveArg){
   livePanel.innerHTML = `Życia: ${liveArg}`
 }
-
-function clickGreenBox(){
-  resetBoard()
-  score++
-  newScore()
-}
-
-function makeGreenBox(){
-  const i = Math.floor(Math.random() * [...gameBoxes].length)
-  gameBoxes[i].style.backgroundColor = "green"
-  gameBoxes[i].addEventListener('click', clickGreenBox)
-}
-function createNewGameBoard(){
-  updateScore()
-  gameBoxes.forEach(item => 
-    {item.style.backgroundColor = "white"
-    item.removeEventListener('click', clickGreenBox)})
-  makeGreenBox()
-}
-function updateScore(){
-  console.log(score)
-  console.log(previousScore)
-  if(time <=58 && score === previousScore){
-    newLive(live--)
-  }
-  else{
-    previousScore = score
-  }
-}
 function start(){
   createNewGameBoard()
   intervalTime = setInterval(timer, 1000)
-  intervalBoard = setInterval(createNewGameBoard, 2000)
+  intervalBoard = setInterval(createNewGameBoard, 3000)
   startButton.removeEventListener('click', start)
 }
 function reset(){
@@ -67,12 +45,55 @@ function reset(){
   newLive(live)
   clearInterval(intervalBoard)
   clearInterval(intervalTime)
-  resetBoard()
+  resetOnlyBoard()
 }
-function resetBoard(){
+function resetOnlyBoard(){
+  clearInterval(intervalResetGreenBox)
   gameBoxes.forEach(item => 
     {item.style.backgroundColor = "white"
+    item.addEventListener('click', lostLive)
     item.removeEventListener('click', clickGreenBox)})
 }
-
-//makeGreenBox()
+function makeGreenBox(){
+  const i = Math.floor(Math.random() * [...gameBoxes].length)
+  gameBoxes[i].style.backgroundColor = "green"
+  gameBoxes[i].removeEventListener('click', lostLive)
+  gameBoxes[i].addEventListener('click', clickGreenBox)
+}
+function createNewGameBoard(){
+  checkLiveAndTime()
+  intervalResetGreenBox = setInterval(resetOnlyBoard, 2000)
+  updateScore()
+  gameBoxes.forEach(item => 
+    {item.style.backgroundColor = "white"
+    item.addEventListener('click', lostLive)
+    item.removeEventListener('click', clickGreenBox)})
+  makeGreenBox()
+}
+function clickGreenBox(){
+  resetOnlyBoard()
+  score++
+  newScore()
+}
+function updateScore(){
+  console.log(score)
+  console.log(previousScore)
+  if(time <=58 && score === previousScore){
+    newLive(--live)
+    tempAlert('straciłeś życie', 500)
+  }
+  else{
+    previousScore = score
+  }
+}
+function checkLiveAndTime(){
+  if(live === 0 || time === 0){
+    reset()
+    tempAlert('Game over', 1000)
+  }
+}
+function lostLive(){
+  newLive(--live)
+  tempAlert('straciłeś życie', 500)
+  checkLiveAndTime()
+}
